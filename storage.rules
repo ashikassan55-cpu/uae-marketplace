@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Listing photos: any signed-in user can read (public marketplace),
+    // only the owner (matched by their uid in the path) can write.
+    match /listings/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Verification documents: never publicly readable. Only the applicant
+    // can upload; only backend (Admin SDK, bypasses these rules) can read
+    // them for review.
+    match /shops/{shopId}/verification/{fileName} {
+      allow read: if false;
+      allow write: if request.auth != null
+        && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    match /shops/{shopId}/public/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
