@@ -12,71 +12,28 @@ import {
 } from "firebase/firestore";
 import { db, firebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_LISTINGS, mockListingById } from "@/lib/data/mock";
-import type { Category, Condition, Emirate, Listing } from "@/lib/types";
+import type { Listing } from "@/lib/types";
+import { filterAndScoreListings, type SearchFilters } from "@/lib/search/keyword-rank";
 
-export interface SearchFilters {
-  category?: Category;
-  emirate?: Emirate;
-  minPrice?: number;
-  maxPrice?: number;
-  condition?: Condition;
-  verifiedShopsOnly?: boolean;
-}
+export type { SearchFilters };
 
 /**
- * Keyword prefilter + rank. This is the "normal DB query first" half of the
- * project's cost-control rule — only the results this returns should ever
- * be handed to a Haiku ranking/explanation call, never the whole table.
+ * Keyword prefilter + rank (client-side, used for instant results while
+ * the AI re-rank from /api/search is still loading — see the search page).
+ * This is the "normal DB query first" half of the project's cost-control
+ * rule — only a small filtered pool like this should ever be handed to an
+ * AI ranking/explanation call, never the whole table.
  *
- * Today this is a simple keyword/field match so the app is fully usable
- * without any AI wiring yet. Swap the ranking step for an embeddings
- * similarity search + Haiku re-rank once ANTHROPIC_API_KEY is configured
- * (see /api/search/route.ts).
+ * The actual scoring logic lives in src/lib/search/keyword-rank.ts so the
+ * server-side route handler can reuse it without importing this
+ * "use client"-only module.
  */
 export async function searchListings(
   rawQuery: string,
   filters: SearchFilters = {},
 ): Promise<Listing[]> {
   const pool = await getActiveListings();
-  const q = rawQuery.trim().toLowerCase();
-  const terms = q.split(/\s+/).filter(Boolean);
-
-  return pool
-    .filter((listing) => {
-      if (filters.category && listing.category !== filters.category) return false;
-      if (filters.emirate && listing.emirate !== filters.emirate) return false;
-      if (filters.condition && listing.condition !== filters.condition) return false;
-      if (filters.minPrice != null && listing.price < filters.minPrice) return false;
-      if (filters.maxPrice != null && listing.price > filters.maxPrice) return false;
-      if (filters.verifiedShopsOnly && listing.ownerType !== "shop") return false;
-      return true;
-    })
-    .map((listing) => {
-      if (!terms.length) return { listing, score: 0 };
-      const haystack = [
-        listing.title,
-        listing.descriptionEn,
-        listing.category,
-        listing.subcategory ?? "",
-        ...listing.searchKeywords,
-      ]
-        .join(" ")
-        .toLowerCase();
-      const score = terms.reduce(
-        (acc, term) => acc + (haystack.includes(term) ? 1 : 0),
-        0,
-      );
-      return { listing, score };
-    })
-    .filter((r) => !terms.length || r.score > 0)
-    .sort((a, b) => {
-      // Own listings first (all of these are "own" — external link-preview
-      // results are merged in at the API layer, not here), then by score,
-      // then newest first.
-      if (b.score !== a.score) return b.score - a.score;
-      return b.listing.createdAt - a.listing.createdAt;
-    })
-    .map((r) => r.listing);
+  return filterAndScoreListings(pool, rawQuery, filters).map((r) => r.listing);
 }
 
 export async function getActiveListings(): Promise<Listing[]> {

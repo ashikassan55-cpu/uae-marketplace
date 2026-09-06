@@ -10,6 +10,11 @@ import type { Listing } from "@/lib/types";
 import { SearchBox } from "./search-box";
 import { FiltersSheet } from "./filters-sheet";
 
+interface RankedListing {
+  listing: Listing;
+  reason: string | null;
+}
+
 function SearchInner() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
@@ -19,7 +24,8 @@ function SearchInner() {
     category: category as SearchFilters["category"],
   });
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [results, setResults] = useState<Listing[] | null>(null);
+  const [results, setResults] = useState<RankedListing[] | null>(null);
+  const [aiUsed, setAiUsed] = useState(false);
 
   const effectiveFilters = useMemo(
     () => ({ ...filters, category: (category as SearchFilters["category"]) ?? filters.category }),
@@ -30,8 +36,28 @@ function SearchInner() {
     let cancelled = false;
     (async () => {
       setResults(null);
-      const r = await searchListings(q, effectiveFilters);
-      if (!cancelled) setResults(r);
+      try {
+        const res = await fetch("/api/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ q, filters: effectiveFilters }),
+        });
+        if (!res.ok) throw new Error(`search API returned ${res.status}`);
+        const data = (await res.json()) as { results: RankedListing[]; aiUsed: boolean };
+        if (!cancelled) {
+          setResults(data.results);
+          setAiUsed(data.aiUsed);
+        }
+      } catch (err) {
+        // Fall back to plain client-side keyword search (e.g. API route
+        // unreachable) so search never fully breaks.
+        console.error("AI search failed, falling back to keyword search", err);
+        const plain = await searchListings(q, effectiveFilters);
+        if (!cancelled) {
+          setResults(plain.map((listing) => ({ listing, reason: null })));
+          setAiUsed(false);
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -60,10 +86,11 @@ function SearchInner() {
           <p className="px-4 text-xs text-om-text-tertiary">
             {results.length} result{results.length === 1 ? "" : "s"}
             {q ? ` for "${q}"` : ""} · own listings shown first
+            {aiUsed ? " · ranked by AI" : ""}
           </p>
           <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 md:grid-cols-4">
-            {results.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+            {results.map(({ listing, reason }) => (
+              <ListingCard key={listing.id} listing={listing} reason={reason ?? undefined} />
             ))}
           </div>
           <div className="mx-4 mt-2 rounded-lg border border-om-border-subtle bg-om-bg-panel p-3 text-sm text-om-text-secondary">

@@ -4,7 +4,14 @@ import { BadgeCheck } from "lucide-react";
 import type { Listing } from "@/lib/types";
 import { formatAed, timeAgo } from "@/lib/utils";
 
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({
+  listing,
+  reason,
+}: {
+  listing: Listing;
+  /** Optional AI-generated "why this fits" sentence, shown from search results. */
+  reason?: string;
+}) {
   return (
     <Link
       href={`/listing/${listing.id}`}
@@ -33,6 +40,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
           {listing.area ? `${listing.area}, ` : ""}
           {listing.emirate} · {timeAgo(listing.createdAt)}
         </span>
+        {reason ? (
+          <span className="mt-1 line-clamp-2 text-xs italic text-om-accent-verifier">
+            {reason}
+          </span>
+        ) : null}
       </div>
     </Link>
   );
