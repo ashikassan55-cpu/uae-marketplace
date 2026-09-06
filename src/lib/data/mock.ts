@@ -69,7 +69,7 @@ export const MOCK_LISTINGS: Listing[] = [
     emirate: "Dubai",
     area: "Business Bay",
     images: [
-      "https://images.unsplash.com/photo-1592286927505-1def25115481?w=800&q=80",
+      "https://picsum.photos/seed/iphone13pro/800/800",
     ],
     status: "active",
     createdAt: now - days(1),
@@ -159,7 +159,7 @@ export const MOCK_LISTINGS: Listing[] = [
     emirate: "Ajman",
     area: "Al Nuaimiya",
     images: [
-      "https://images.unsplash.com/photo-1586337278111-32b32b2c2d9f?w=800&q=80",
+      "https://picsum.photos/seed/babycrib/800/800",
     ],
     status: "active",
     createdAt: now - days(5),

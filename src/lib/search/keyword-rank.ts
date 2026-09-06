@@ -29,7 +29,15 @@ export function filterAndScoreListings(
   filters: SearchFilters = {},
 ): ScoredListing[] {
   const q = rawQuery.trim().toLowerCase();
-  const terms = q.split(/\s+/).filter(Boolean);
+  const rawTerms = q.split(/\s+/).filter(Boolean);
+  // Drop single-character tokens from scoring — e.g. a stray space typed
+  // inside "iPhone" ("i phone") otherwise leaves a bare "i" term, which is a
+  // substring of almost every listing ("Mountain", "Fabric", ...) and used to
+  // drag unrelated results into every search. Still fall back to the raw
+  // terms if that's literally all the user typed, so a single-letter search
+  // isn't silently turned into a zero-term (match-everything) search.
+  const meaningfulTerms = rawTerms.filter((t) => t.length > 1);
+  const terms = meaningfulTerms.length ? meaningfulTerms : rawTerms;
 
   return pool
     .filter((listing) => {
