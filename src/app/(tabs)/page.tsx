@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bell, MapPin, Search as SearchIcon } from "lucide-react";
 import { CategoryChips } from "@/components/category-chips";
 import { ListingCard } from "@/components/listing-card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getActiveListings } from "@/lib/data/listings";
 import type { Listing } from "@/lib/types";
 
@@ -28,6 +29,7 @@ export default function HomePage() {
           <MapPin size={15} />
           <span>Dubai, UAE</span>
         </div>
+        <ThemeToggle />
         <Link
           href="/notifications"
           aria-label="Notifications"
