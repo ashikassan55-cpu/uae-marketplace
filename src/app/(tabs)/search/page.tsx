@@ -66,12 +66,12 @@ function SearchInner() {
   }, [q, JSON.stringify(effectiveFilters)]);
 
   return (
-    <div className="flex min-h-dvh flex-col gap-4 pb-4">
+    <div className="flex min-h-dvh flex-col gap-4 pb-4 md:px-12 md:pb-14 md:pt-6">
       <TopBar title="Search" />
       <SearchBox onOpenFilters={() => setFiltersOpen(true)} />
 
       {results === null ? (
-        <p className="px-4 text-sm text-om-text-tertiary">Searching…</p>
+        <p className="px-4 text-sm text-om-text-tertiary md:px-0">Searching…</p>
       ) : results.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-8 py-16 text-center">
           <SearchIcon size={32} className="text-om-text-disabled" />
@@ -83,17 +83,17 @@ function SearchInner() {
         </div>
       ) : (
         <>
-          <p className="px-4 text-xs text-om-text-tertiary">
+          <p className="px-4 text-xs text-om-text-tertiary md:px-0">
             {results.length} result{results.length === 1 ? "" : "s"}
             {q ? ` for "${q}"` : ""} · own listings shown first
             {aiUsed ? " · ranked by AI" : ""}
           </p>
-          <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 md:grid-cols-4 md:gap-5 md:px-0">
             {results.map(({ listing, reason }) => (
               <ListingCard key={listing.id} listing={listing} reason={reason ?? undefined} />
             ))}
           </div>
-          <div className="mx-4 mt-2 rounded-lg border border-om-border-subtle bg-om-bg-panel p-3 text-sm text-om-text-secondary">
+          <div className="mx-4 mt-2 rounded-lg border border-om-border-subtle bg-om-bg-panel p-3 text-sm text-om-text-secondary md:mx-0">
             Not quite right? Tell me more — purpose, budget, or exact model — and
             I&rsquo;ll refine the shortlist.
           </div>

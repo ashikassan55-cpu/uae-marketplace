@@ -18,7 +18,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="sticky bottom-0 z-40 flex border-t border-om-border-default bg-om-bg-surface/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+      className="sticky bottom-0 z-40 flex border-t border-om-border-default bg-om-bg-surface/95 backdrop-blur pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label="Primary"
     >
       {TABS.map(({ href, label, icon: Icon }) => {

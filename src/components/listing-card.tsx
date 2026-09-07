@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Sparkles } from "lucide-react";
 import type { Listing } from "@/lib/types";
 import { formatAed, timeAgo } from "@/lib/utils";
 
@@ -41,8 +41,11 @@ export function ListingCard({
           {listing.emirate} · {timeAgo(listing.createdAt)}
         </span>
         {reason ? (
-          <span className="mt-1 line-clamp-2 text-xs italic text-om-accent-verifier">
-            {reason}
+          <span className="mt-1.5 flex items-start gap-1.5 rounded-[10px] bg-om-accent-primary-bg px-2 py-1.5">
+            <Sparkles size={12} className="mt-0.5 flex-shrink-0 text-om-accent-primary" />
+            <span className="line-clamp-2 text-xs leading-snug text-om-accent-primary-hover">
+              {reason}
+            </span>
           </span>
         ) : null}
       </div>

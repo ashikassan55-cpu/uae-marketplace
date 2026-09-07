@@ -1,6 +1,16 @@
 import type { Metadata, Viewport } from "next";
+import { Manrope } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import "./globals.css";
+
+// The approved mockups load Manrope directly and use it as the page font
+// (see the design canvas artboards) — this is the real typeface, not the
+// system-font fallback the app shipped with before.
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-manrope",
+});
 
 export const metadata: Metadata = {
   title: "UAE Marketplace",
@@ -11,7 +21,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#faf9f5",
+  themeColor: "#fcfcfc",
 };
 
 // Runs before first paint so the page always renders the approved LIGHT
@@ -23,8 +33,8 @@ const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('om-theme'
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-om-bg-app text-om-text-primary">
+    <html lang="en" className={`h-full antialiased ${manrope.variable}`}>
+      <body className="min-h-full flex flex-col bg-om-bg-app text-om-text-primary font-sans">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <AuthProvider>{children}</AuthProvider>
       </body>
